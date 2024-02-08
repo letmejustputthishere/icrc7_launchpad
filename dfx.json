@@ -1,0 +1,25 @@
+{
+	"canisters": {
+		"backend": {
+			"type": "motoko",
+			"main": "backend/main.mo",
+			"post_install": ["echo 'Hello, World!'"]
+		},
+		"frontend": {
+			"dependencies": ["backend"],
+			"type": "assets",
+			"source": ["build/"]
+		},
+		"internet_identity": {
+			"type": "pull",
+			"id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+		}
+	},
+	"defaults": {
+		"build": {
+			"packtool": "npm run --silent sources"
+		}
+	},
+	"output_env_file": ".env",
+	"version": 2
+}
