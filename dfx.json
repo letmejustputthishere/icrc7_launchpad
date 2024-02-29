@@ -3,7 +3,8 @@
 		"backend": {
 			"type": "motoko",
 			"main": "backend/main.mo",
-			"post_install": ["echo 'Hello, World!'"]
+			"post_install": ["echo 'Hello, World!'"],
+			"dependencies": ["icp_ledger", "cmc"]
 		},
 		"frontend": {
 			"dependencies": ["backend"],
@@ -13,6 +14,30 @@
 		"internet_identity": {
 			"type": "pull",
 			"id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+		},
+		"icp_ledger": {
+			"type": "custom",
+			"candid": "https://raw.githubusercontent.com/dfinity/ic/044cfd5147fc97d7e5a214966941b6580c325d72/rs/rosetta-api/icp_ledger/ledger.did",
+			"wasm": "https://download.dfinity.systems/ic/044cfd5147fc97d7e5a214966941b6580c325d72/canisters/ledger-canister.wasm.gz",
+			"remote": {
+				"id": {
+					"ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+				}
+			},
+			"specified_id": "ryjl3-tyaaa-aaaaa-aaaba-cai",
+			"init_arg": "variant {Init = record { minting_account = \"9aa2574febdc2a31054bb0cd3083e49ee37a176fd9b062f6f3d75cdf51bd2681\"; initial_values = vec {}; send_whitelist = vec{}}}"
+		},
+		"cmc": {
+			"type": "custom",
+			"candid": "https://raw.githubusercontent.com/dfinity/ic/044cfd5147fc97d7e5a214966941b6580c325d72/rs/nns/cmc/cmc.did",
+			"wasm": "https://download.dfinity.systems/ic/044cfd5147fc97d7e5a214966941b6580c325d72/canisters/cycles-minting-canister.wasm.gz",
+			"remote": {
+				"id": {
+					"ic": "rkp4c-7iaaa-aaaaa-aaaca-cai"
+				}
+			},
+			"specified_id": "rkp4c-7iaaa-aaaaa-aaaca-cai",
+			"init_arg": "opt record { ledger_canister_id = opt principal \"ryjl3-tyaaa-aaaaa-aaaba-cai\"; minting_account_id = opt \"9aa2574febdc2a31054bb0cd3083e49ee37a176fd9b062f6f3d75cdf51bd2681\"; governance_canister_id = opt principal \"aaaaa-aa\"; last_purged_notification = opt 0 }"
 		}
 	},
 	"defaults": {
