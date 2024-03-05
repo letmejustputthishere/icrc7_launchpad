@@ -1,9 +1,13 @@
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import { deployCanister } "factory";
+import Blob "mo:base/Blob";
+import Array "mo:base/Array";
+import { deployCanister; mintCycles } "factory";
+import { principalToSubaccount } "mo:account-identifier";
 import IcrcNft "services/icrcNft";
+import IcpLedger "canister:icp_ledger";
 
-actor class Main() {
+actor Main {
 
 	stable var icrc7Wasm : ?Blob = null;
 	stable var assetsWasm : ?Blob = null;
@@ -31,7 +35,14 @@ actor class Main() {
 		};
 	};
 
-	public shared func createCollection(initArgs : IcrcNft.InitArgs) : async Result.Result<Text, Text> {
+	public shared ({ caller }) func getUserAccount() : async IcpLedger.Account {
+		{
+			owner = Principal.fromActor(Main);
+			subaccount = ?Blob.toArray(principalToSubaccount(caller));
+		};
+	};
+
+	public shared ({ caller }) func createCollection(initArgs : IcrcNft.InitArgs) : async Result.Result<Text, Text> {
 		let ?icrc7 = icrc7Wasm else {
 			return #err("Wasm not uploaded");
 		};
@@ -39,8 +50,28 @@ actor class Main() {
 			return #err("Wasm not uploaded");
 		};
 
-		let icrc7Canister = await deployCanister(icrc7, to_candid (initArgs));
-		let assetsCanister = await deployCanister(assets, to_candid (null));
+		// check ICP balance of the callers dedicated account
+		let balance = await IcpLedger.icrc1_balance_of({
+			owner = Principal.fromActor(Main);
+			subaccount = ?Blob.toArray(principalToSubaccount(caller));
+		});
+
+		if (balance < 200_000_000) {
+			return #err("Not enough funds available in the Account. Make sure you send at least 2 ICP.");
+		};
+
+		// mint cycles from the ICP sent to top up the canisters
+		let cyclesMinted = switch (await mintCycles(balance, caller, Principal.fromActor(Main))) {
+			case (#ok(cycles)) {
+				cycles;
+			};
+			case (#err(err)) {
+				return #err(err);
+			};
+		};
+
+		let icrc7Canister = await deployCanister(icrc7, to_candid (initArgs), cyclesMinted / 2);
+		let assetsCanister = await deployCanister(assets, to_candid (null), cyclesMinted / 2);
 
 		return #ok("Collection created");
 	};
