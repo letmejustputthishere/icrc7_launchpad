@@ -9,7 +9,6 @@ module {
 	};
 
 	public type CreateCollectionArgs = {
-		deployer : Principal;
 		supply_cap : ?Nat;
 		logo : ?Text;
 		name : ?Text;

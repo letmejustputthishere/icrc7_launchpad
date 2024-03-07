@@ -81,6 +81,7 @@ actor Main {
 		let icrc7InitArgs : IcrcNft.InitArgs = {
 			icrc7_args = ?{
 				initArgs and {
+					deployer = caller;
 					allow_transfers = null;
 					burn_account = null;
 					default_take_value = null;
