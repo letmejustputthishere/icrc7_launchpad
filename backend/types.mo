@@ -8,6 +8,15 @@ module {
 		icrc7Canister : Principal;
 	};
 
+	public type CreateCollectionArgs = {
+		deployer : Principal;
+		supply_cap : ?Nat;
+		logo : ?Text;
+		name : ?Text;
+		description : ?Text;
+		symbol : ?Text;
+	};
+
 	public type install_code_args = {
 		arg : Blob;
 		wasm_module : wasm_module;

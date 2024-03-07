@@ -49,7 +49,7 @@ actor Main {
 		};
 	};
 
-	public shared ({ caller }) func createCollection(initArgs : IcrcNft.InitArgs) : async Result.Result<Text, Text> {
+	public shared ({ caller }) func createCollection(initArgs : Types.CreateCollectionArgs) : async Result.Result<Text, Text> {
 		let ?icrc7 = icrc7Wasm else {
 			return #err("Wasm not uploaded");
 		};
@@ -77,8 +77,26 @@ actor Main {
 			};
 		};
 
-		let icrc7Canister = await deployCanister(icrc7, to_candid (initArgs), cyclesMinted / 2);
 		let assetsCanister = await deployCanister(assets, to_candid (null), cyclesMinted / 2);
+		let icrc7InitArgs : IcrcNft.InitArgs = {
+			icrc7_args = ?{
+				initArgs and {
+					allow_transfers = null;
+					burn_account = null;
+					default_take_value = null;
+					permitted_drift = null;
+					max_take_value = null;
+					max_update_batch_size = null;
+					max_query_batch_size = null;
+					max_memo_size = null;
+					supported_standards = null;
+				}
+			};
+			assetCanisterId = assetsCanister;
+			icrc30_args = null;
+			icrc3_args = null;
+		};
+		let icrc7Canister = await deployCanister(icrc7, to_candid (icrc7InitArgs), cyclesMinted / 2);
 
 		//  store collection in collections and userCollections
 		userCollections := addCollection({

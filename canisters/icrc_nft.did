@@ -376,6 +376,7 @@ type InitArgs__1 =
   };
 type InitArgs = 
  record {
+   assetCanisterId: principal;
    icrc30_args: InitArgs__1;
    icrc3_args: InitArgs__2;
    icrc7_args: InitArgs__4;

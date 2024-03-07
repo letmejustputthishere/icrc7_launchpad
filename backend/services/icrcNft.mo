@@ -104,6 +104,7 @@ module {
   public type IndexType = { #Stable; #StableTyped; #Managed };
   public type InitArgs = {
     icrc3_args : InitArgs__2;
+    assetCanisterId : Principal;
     icrc30_args : InitArgs__1;
     icrc7_args : InitArgs__4;
   };
