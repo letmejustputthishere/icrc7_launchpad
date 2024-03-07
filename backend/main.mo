@@ -6,11 +6,18 @@ import { deployCanister; mintCycles } "factory";
 import { principalToSubaccount } "mo:account-identifier";
 import IcrcNft "services/icrcNft";
 import IcpLedger "canister:icp_ledger";
+import Types "types";
+import Vector "mo:vector";
+import Trie "mo:base/Trie";
+import { get; put; addCollection } "utils";
 
 actor Main {
 
 	stable var icrc7Wasm : ?Blob = null;
 	stable var assetsWasm : ?Blob = null;
+
+	stable let collections = Vector.new<Types.Collection>();
+	stable var userCollections = Trie.empty<Principal, Vector.Vector<Nat>>();
 
 	public shared ({ caller }) func uploadWasm(wasm : { #icrc7 : Blob; #assets : Blob }) {
 		assert (Principal.isController(caller));
@@ -73,7 +80,27 @@ actor Main {
 		let icrc7Canister = await deployCanister(icrc7, to_candid (initArgs), cyclesMinted / 2);
 		let assetsCanister = await deployCanister(assets, to_candid (null), cyclesMinted / 2);
 
+		//  store collection in collections and userCollections
+		userCollections := addCollection({
+			caller;
+			collections;
+			icrc7Canister;
+			assetsCanister;
+			userCollections;
+		});
+
 		return #ok("Collection created");
+	};
+
+	public func getCollections() : async [Types.Collection] {
+		Vector.toArray(collections);
+	};
+
+	public func getUserCollections() : async [(Principal, [Nat])] {
+		Trie.toArray<Principal, Vector.Vector<Nat>, (Principal, [Nat])>(
+			userCollections,
+			func(k : Principal, v : Vector.Vector<Nat>) { return (k, Vector.toArray(v)) }
+		);
 	};
 
 };

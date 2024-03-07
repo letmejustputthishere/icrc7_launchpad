@@ -3,6 +3,11 @@ module {
 
 	public type canister_id = Principal;
 
+	public type Collection = {
+		assetsCanister : Principal;
+		icrc7Canister : Principal;
+	};
+
 	public type install_code_args = {
 		arg : Blob;
 		wasm_module : wasm_module;
