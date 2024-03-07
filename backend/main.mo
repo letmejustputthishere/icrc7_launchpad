@@ -9,7 +9,7 @@ import IcpLedger "canister:icp_ledger";
 import Types "types";
 import Vector "mo:vector";
 import Trie "mo:base/Trie";
-import { get; put; addCollection } "utils";
+import { get; addCollection } "utils";
 
 actor Main {
 
@@ -110,15 +110,23 @@ actor Main {
 		return #ok("Collection created");
 	};
 
-	public func getCollections() : async [Types.Collection] {
-		Vector.toArray(collections);
+	public query func getRecentCollections() : async [Types.Collection] {
+		Vector.toArray(collections)
+		|> Array.take(_, -10);
 	};
 
-	public func getUserCollections() : async [(Principal, [Nat])] {
-		Trie.toArray<Principal, Vector.Vector<Nat>, (Principal, [Nat])>(
-			userCollections,
-			func(k : Principal, v : Vector.Vector<Nat>) { return (k, Vector.toArray(v)) }
-		);
+	public shared query ({ caller }) func getUserCollection() : async [Types.Collection] {
+		let ?collectionIndices : ?Vector.Vector<Nat> = get(userCollections, caller) else {
+			return [];
+		};
+
+		Vector.map<Nat, Types.Collection>(
+			collectionIndices,
+			func(i : Nat) {
+				return Vector.get(collections, i);
+			}
+		)
+		|> Vector.toArray(_);
 	};
 
 };
