@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"setup": "npm i && npm run init-ii && dfx deploy backend && dfx deps deploy",
+		"setup": "npm i && npm run init-ii && dfx deploy backend --mode reinstall && dfx deps deploy",
 		"init-ii": "dfx deps pull && dfx deps init internet_identity --argument '(null)'",
 		"upload_canisters": "tsx ./upload-wasm.mts",
 		"start": "run-p frontend backend",
