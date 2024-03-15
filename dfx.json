@@ -17,7 +17,7 @@
 		},
 		"icp_ledger": {
 			"type": "custom",
-			"candid": "https://raw.githubusercontent.com/dfinity/ic/044cfd5147fc97d7e5a214966941b6580c325d72/rs/rosetta-api/icp_ledger/ledger.did",
+			"candid": "canisters/icp_ledger.did",
 			"wasm": "https://download.dfinity.systems/ic/044cfd5147fc97d7e5a214966941b6580c325d72/canisters/ledger-canister.wasm.gz",
 			"remote": {
 				"id": {

@@ -1,17 +1,52 @@
 import { writable } from 'svelte/store';
-import { HttpAgent } from '@dfinity/agent';
+import { HttpAgent, type HttpAgentOptions } from '@dfinity/agent';
 import { backend, canisterId, createActor } from '../declarations/backend';
 import { AuthClient } from '@dfinity/auth-client';
 
 type State = {
 	context: 'loading' | 'authenticated' | 'unauthenticated';
-	actor: typeof backend;
+	backend: typeof backend;
+	agent: HttpAgent;
 };
 
 const defaultState: State = {
 	context: 'loading',
-	actor: backend
+	backend: backend,
+	agent: createAgent()
 };
+
+function createAgent(options: HttpAgentOptions = {}): HttpAgent {
+	const agent = new HttpAgent(options);
+	fetchRootkey(agent);
+	return agent;
+}
+
+function fetchRootkey(agent: HttpAgent) {
+	// Fetch root key for certificate validation during development
+	if (process.env.DFX_NETWORK !== 'ic') {
+		agent.fetchRootKey().catch((err) => {
+			console.warn('Unable to fetch root key. Check to ensure that your local replica is running');
+			console.error(err);
+		});
+	}
+}
+
+function createAgentAndActor(authClient: AuthClient): {
+	agent: HttpAgent;
+	backend: typeof backend;
+} {
+	// At this point we're authenticated, and we can get the identity from the auth client:
+	const identity = authClient.getIdentity();
+
+	// Using the identity obtained from the auth client, we can create an agent to interact with the IC.
+	const agent = createAgent({ identity });
+
+	// Using the interface description of our webapp, we create an actor that we use to call the service methods.
+	const backend = createActor(canisterId, {
+		agent
+	});
+	return { agent, backend };
+}
 
 export function createStore() {
 	const { subscribe, update } = writable<State>(defaultState);
@@ -25,24 +60,19 @@ export function createStore() {
 			const context = (await authClient.isAuthenticated()) ? 'authenticated' : 'unauthenticated';
 
 			if (context === 'authenticated') {
-				const identity = authClient.getIdentity();
-				const agent = new HttpAgent({ identity });
-
-				//  create an actor with the agent
-				const actor = createActor(canisterId, {
-					agent
-				});
+				const { agent, backend } = createAgentAndActor(authClient);
 
 				// update the store
 				update(() => ({
 					context,
-					actor
+					backend,
+					agent
 				}));
 			} else {
 				// update the store
-				update(() => ({
-					context,
-					actor: backend
+				update((prevState) => ({
+					...prevState,
+					context
 				}));
 			}
 		} catch (err: unknown) {
@@ -60,10 +90,10 @@ export function createStore() {
 			await authClient.logout();
 
 			// update the store
-			update((prevState) => ({
-				...prevState,
+			update(() => ({
+				agent: createAgent(),
 				context: 'unauthenticated',
-				actor: backend
+				backend
 			}));
 		} catch (err: unknown) {
 			console.error(err);
@@ -88,20 +118,13 @@ export function createStore() {
 				});
 			});
 
-			// At this point we're authenticated, and we can get the identity from the auth client:
-			const identity = authClient.getIdentity();
-			// Using the identity obtained from the auth client, we can create an agent to interact with the IC.
-			const agent = new HttpAgent({ identity });
-			// Using the interface description of our webapp, we create an actor that we use to call the service methods.
-			const actor = createActor(canisterId, {
-				agent
-			});
+			const { agent, backend } = createAgentAndActor(authClient);
 
 			// update the store
-			update((prevState) => ({
-				...prevState,
+			update(() => ({
+				agent,
 				context: 'authenticated',
-				actor
+				backend
 			}));
 		} catch (err: unknown) {
 			console.error(err);

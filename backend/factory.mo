@@ -56,7 +56,7 @@ module Factory {
 			let transferResult = await IcpLedger.transfer({
 				amount = { e8s = Nat64.fromNat(balance) - 10_000 : Nat64 };
 				// we move the funds from the caller dedicated subacccount
-				from_subaccount = ?principalToSubaccount(caller);
+				from_subaccount = ?Blob.toArray(principalToSubaccount(caller));
 				created_at_time = null;
 				fee = { e8s = 10_000 : Nat64 };
 				// the memo is important for the CMC to confirm the operation
@@ -65,7 +65,7 @@ module Factory {
 				memo = 0x50555054;
 				// we move the funds to the canister dedicated subaccount for the CMC
 				// the CMC only checks the caller dedicated subaccount when topping up
-				to = accountIdentifier(Principal.fromActor(Cmc), principalToSubaccount(canister));
+				to = Blob.toArray(accountIdentifier(Principal.fromActor(Cmc), principalToSubaccount(canister)));
 			});
 
 			let blockIndex = switch (transferResult) {
