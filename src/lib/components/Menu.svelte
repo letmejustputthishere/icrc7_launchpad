@@ -26,7 +26,7 @@
 	</button>
 </div>
 
-<style>
+<style lang="postcss">
 	.activated {
 		@apply z-10 text-blue-700 ring-2 ring-blue-700;
 	}
