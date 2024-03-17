@@ -1,12 +1,12 @@
 import { config } from 'dotenv';
-import { HttpAgent, Identity } from '@dfinity/agent';
+import { Actor, ActorSubclass, HttpAgent, Identity } from '@dfinity/agent';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
-import { createActor } from './src/declarations/backend';
 import { ExecSyncOptions, execSync } from 'child_process';
 
 import fs from 'fs';
 import pemfile from 'pem-file';
+import { IDL } from '@dfinity/candid';
 
 config();
 
@@ -36,13 +36,7 @@ function decode(rawKey: string) {
 	return Ed25519KeyIdentity.fromSecretKey(buf.subarray(16, 48));
 }
 
-const loadWasm = (path) => {
-	const buffer = fs.readFileSync(`${process.cwd()}/${path}`);
-	return [...new Uint8Array(buffer)];
-};
-
-export async function uploadWasm(wasmPath, wasmType: 'icrc7' | 'assets', pemPath?) {
-	const BACKEND_CANISTER_ID = process.env.BACKEND_CANISTER_ID;
+export function createAgent(pemPath?: string): HttpAgent {
 	const DFX_NETWORK = process.env.DFX_NETWORK;
 	const host = DFX_NETWORK == 'ic' ? 'https://ic0.app' : 'http://127.0.0.1:4943';
 
@@ -51,18 +45,28 @@ export async function uploadWasm(wasmPath, wasmType: 'icrc7' | 'assets', pemPath
 		identity: pemPath ? decodeFile(pemPath) : decodeCurrentIdentity()
 	});
 
-	const backendActor = createActor(BACKEND_CANISTER_ID!, { agent });
+	// Fetch root key for certificate validation during development
+	if (process.env.DFX_NETWORK !== 'ic') {
+		agent.fetchRootKey().catch((err) => {
+			console.warn('Unable to fetch root key. Check to ensure that your local replica is running');
+			console.error(err);
+		});
+	}
 
-	const wasm = loadWasm(wasmPath);
-
-	await backendActor.uploadWasm({ [wasmType]: wasm } as
-		| {
-				icrc7: Uint8Array | number[];
-		  }
-		| {
-				assets: Uint8Array | number[];
-		  });
+	return agent;
 }
 
-uploadWasm('canisters/icrc_nft.wasm', 'icrc7');
-uploadWasm('canisters/assetstorage.wasm.gz', 'assets');
+export function createActor<_SERVICE>(
+	idlFactory: IDL.InterfaceFactory,
+	canisterId: string | undefined,
+	pemPath?: string
+): ActorSubclass<_SERVICE> {
+	// create an agent
+	const agent = createAgent(pemPath);
+
+	// create an actor
+	return Actor.createActor<_SERVICE>(idlFactory, {
+		agent,
+		canisterId: canisterId!
+	});
+}

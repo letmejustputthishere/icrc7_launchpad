@@ -7,12 +7,14 @@ type State = {
 	context: 'loading' | 'authenticated' | 'unauthenticated';
 	backend: typeof backend;
 	agent: HttpAgent;
+	view: 'collections' | 'myCollections';
 };
 
 const defaultState: State = {
 	context: 'loading',
 	backend: backend,
-	agent: createAgent()
+	agent: createAgent(),
+	view: 'collections'
 };
 
 function createAgent(options: HttpAgentOptions = {}): HttpAgent {
@@ -49,7 +51,7 @@ function createAgentAndActor(authClient: AuthClient): {
 }
 
 export function createStore() {
-	const { subscribe, update } = writable<State>(defaultState);
+	const { subscribe, update, set } = writable<State>(defaultState);
 
 	async function init() {
 		try {
@@ -63,7 +65,8 @@ export function createStore() {
 				const { agent, backend } = createAgentAndActor(authClient);
 
 				// update the store
-				update(() => ({
+				update((prevState) => ({
+					...prevState,
 					context,
 					backend,
 					agent
@@ -93,7 +96,8 @@ export function createStore() {
 			update(() => ({
 				agent: createAgent(),
 				context: 'unauthenticated',
-				backend
+				backend,
+				view: 'collections'
 			}));
 		} catch (err: unknown) {
 			console.error(err);
@@ -121,7 +125,8 @@ export function createStore() {
 			const { agent, backend } = createAgentAndActor(authClient);
 
 			// update the store
-			update(() => ({
+			update((prevState) => ({
+				...prevState,
 				agent,
 				context: 'authenticated',
 				backend
@@ -134,6 +139,7 @@ export function createStore() {
 	return {
 		subscribe,
 		update,
+		set,
 		init,
 		logout,
 		login

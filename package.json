@@ -5,7 +5,8 @@
 	"scripts": {
 		"setup": "npm i && npm run init-ii && dfx deploy backend && dfx deps deploy",
 		"init-ii": "dfx deps pull && dfx deps init internet_identity --argument '(null)'",
-		"upload_canisters": "tsx ./upload-wasm.mts",
+		"upload-canisters": "tsx ./scripts/upload-wasm.mts",
+		"create-collections": "tsx ./scripts/create-collections.mts",
 		"start": "run-p frontend backend",
 		"frontend": "vite --host",
 		"backend": "mo-dev --generate --deploy -y",
@@ -28,6 +29,7 @@
 		"@dfinity/auth-client": "^1.0.1",
 		"@dfinity/candid": "^1.0.1",
 		"@dfinity/identity-secp256k1": "^1.0.1",
+		"@dfinity/ledger-icp": "^2.2.1",
 		"@dfinity/principal": "^1.0.1",
 		"@hadronous/pic": "^0.6.0",
 		"@skeletonlabs/skeleton": "^2.9.0",
