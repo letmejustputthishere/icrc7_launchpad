@@ -1,6 +1,9 @@
 <script lang="ts">
 	import CollectionContainer from '$lib/components/CollectionContainer.svelte';
 	import { store } from '$lib/store';
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
+	const modalStore = getModalStore();
 </script>
 
 <svelte:head>
@@ -8,8 +11,18 @@
 </svelte:head>
 
 <main class="container mx-auto h-full py-12">
-	<h1 class="text-4xl font-bold">Launchpad</h1>
-	<p class="text-lg">Welcome to the Internet Computer!</p>
+	{#if $store.context === 'authenticated'}
+		<button
+			on:click={() =>
+				modalStore.trigger({
+					type: 'component',
+					component: 'stepper'
+				})}
+			class="variant-glass-secondary btn my-12"
+		>
+			Create Collection
+		</button>
+	{/if}
 	{#if $store.view === 'collections'}
 		<CollectionContainer retrieveData={$store.backend.getRecentCollections} />
 	{:else}
