@@ -17,6 +17,19 @@ module Factory {
 		let canisterId = await Ic.install_code(args);
 	};
 
+	public func updateControllers(controllers : [Principal], canisterId : Principal) : async () {
+		await Ic.update_settings({
+			canister_id = canisterId;
+			settings = {
+				controllers = ?controllers;
+				compute_allocation = null;
+				freezing_threshold = null;
+				memory_allocation = null;
+			};
+			sender_canister_version = null;
+		});
+	};
+
 	public func createCanisterWithIcp(args : Cmc.NotifyCreateCanisterArg) : async Cmc.NotifyCreateCanisterResult {
 		let canisterId = await Cmc.notify_create_canister(args);
 	};

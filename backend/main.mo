@@ -2,7 +2,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Blob "mo:base/Blob";
 import Array "mo:base/Array";
-import { deployCanister; mintCycles } "factory";
+import { deployCanister; mintCycles; updateControllers } "factory";
 import { principalToSubaccount } "mo:account-identifier";
 import IcrcNft "services/icrcNft";
 import IcpLedger "canister:icp_ledger";
@@ -49,7 +49,7 @@ actor Main {
 		};
 	};
 
-	public shared ({ caller }) func createCollection(initArgs : Types.CreateCollectionArgs) : async Result.Result<Text, Text> {
+	public shared ({ caller }) func createCollection(initArgs : Types.CreateCollectionArgs) : async Result.Result<{ assetsCanister : Principal; icrc7Canister : Principal }, Text> {
 		let ?icrc7 = icrc7Wasm else {
 			return #err("Wasm not uploaded");
 		};
@@ -78,6 +78,11 @@ actor Main {
 		};
 
 		let assetsCanister = await deployCanister(assets, to_candid (null), cyclesMinted / 2);
+		// create an actor from the assets canister
+		let assetsActor : actor { authorize : shared (other : Principal) -> async () } = actor (Principal.toText(assetsCanister));
+		// authorize the caller to upload assets
+		await assetsActor.authorize(caller);
+
 		let icrc7InitArgs : IcrcNft.InitArgs = {
 			icrc7_args = ?{
 				initArgs and {
@@ -108,12 +113,17 @@ actor Main {
 			userCollections;
 		});
 
-		return #ok("Collection created");
+		// remove the factory canister as a controller
+		await updateControllers([caller], assetsCanister);
+		await updateControllers([caller], icrc7Canister);
+
+		return #ok({ assetsCanister; icrc7Canister });
 	};
 
 	public query func getRecentCollections() : async [Types.Collection] {
 		Vector.toArray(collections)
-		|> Array.take(_, -12);
+		|> Array.take(_, -12)
+		|> Array.reverse(_);
 	};
 
 	public shared query ({ caller }) func getUserCollections() : async [Types.Collection] {
@@ -127,7 +137,8 @@ actor Main {
 				return Vector.get(collections, i);
 			}
 		)
-		|> Vector.toArray(_);
+		|> Vector.toArray(_)
+		|> Array.reverse(_);
 	};
 
 };

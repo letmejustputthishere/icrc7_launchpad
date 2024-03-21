@@ -60,7 +60,7 @@
 </script>
 
 {#if isLoading}
-	<div class="card card-hover h-80 space-y-4 p-4">
+	<div class="card card-hover h-88 space-y-4 p-4">
 		<div class="card-header flex items-center justify-between gap-5">
 			<div class="placeholder flex-auto animate-pulse" />
 			<div class="placeholder-circle w-16 animate-pulse" />
@@ -68,9 +68,11 @@
 		<div class="placeholder animate-pulse" />
 		<div class="placeholder animate-pulse" />
 		<div class="placeholder animate-pulse" />
+		<div class="placeholder animate-pulse" />
+		<div class="placeholder animate-pulse" />
 	</div>
 {:else}
-	<div class="card card-hover h-80 space-y-4 p-4">
+	<div class="card card-hover space-y-4 p-4">
 		<div class="card-header flex items-center justify-between gap-5">
 			<div class="flex-auto">
 				<div>{metadata['icrc7:name']} {metadata['icrc7:symbol']}</div>
@@ -83,5 +85,7 @@
 		<div>Description: {metadata['icrc7:description'] ?? '/'}</div>
 		<div>Supply Cap: {metadata['icrc7:supply_cap'] ?? '∞'}</div>
 		<div>Total Supply: {metadata['icrc7:total_supply']}</div>
+		<div>NFT Canister: {collection.icrc7Canister.toString()}</div>
+		<div>Assets Canister: {collection.assetsCanister.toString()}</div>
 	</div>
 {/if}
