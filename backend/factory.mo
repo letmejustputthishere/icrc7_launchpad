@@ -8,6 +8,7 @@ import { principalToSubaccount; accountIdentifier } "mo:account-identifier";
 import Result "mo:base/Result";
 import Nat64 "mo:base/Nat64";
 import Blob "mo:base/Blob";
+import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Types "types";
 
@@ -34,9 +35,9 @@ module Factory {
 		let canisterId = await Cmc.notify_create_canister(args);
 	};
 
-	public func createCanisterWithCycles(args : Types.create_canister_args, cycles : Nat) : async Types.create_canister_result {
+	public func createCanisterWithCycles(args : Cmc.CreateCanisterArg, cycles : Nat) : async Cmc.CreateCanisterResult {
 		Cycles.add(cycles);
-		let result = await Ic.create_canister(args);
+		let result = await Cmc.create_canister(args);
 	};
 
 	public func topUpCanister(args : Cmc.NotifyTopUpArg) : async Cmc.NotifyTopUpResult {
@@ -44,13 +45,23 @@ module Factory {
 	};
 
 	public func deployCanister(wasm_module : Blob, init_args : Blob, cycles : Nat) : async Principal {
-		let { canister_id } = await createCanisterWithCycles(
+		let createCanisterResult = await createCanisterWithCycles(
 			{
 				settings = null;
-				sender_canister_version = null;
+				subnet_selection = null;
+				subnet_type = null;
 			},
 			cycles
 		);
+
+		let canister_id = switch (createCanisterResult) {
+			case (#Err(err)) {
+				Debug.trap("Couldn't create canister: " # debug_show(err));
+			};
+			case (#Ok(canister_id)) {
+				canister_id;
+			};
+		};
 
 		await installCode({
 			arg = init_args;

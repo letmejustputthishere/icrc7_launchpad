@@ -8,7 +8,7 @@ const loadWasm = (path) => {
 };
 
 export async function uploadWasm(wasmPath, wasmType: 'icrc7' | 'assets', pemPath?) {
-	const backendActor = createActor<_SERVICE>(idlFactory, process.env.BACKEND_CANISTER_ID, pemPath);
+	const backendActor = createActor<_SERVICE>(idlFactory, process.env.CANISTER_ID_BACKEND, pemPath);
 
 	const wasm = loadWasm(wasmPath);
 

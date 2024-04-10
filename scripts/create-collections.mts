@@ -13,12 +13,12 @@ import { Actor } from '@dfinity/agent';
 export async function createCollection(pemPath?) {
 	const icpLedgerActor = createActor<_ICP_LEDGER_SERVICE>(
 		icpLedgerIdlFactory,
-		process.env.ICP_LEDGER_CANISTER_ID,
+		process.env.CANISTER_ID_ICP_LEDGER,
 		pemPath
 	);
 	const backendActor = createActor<_BACKEND_SERVICE>(
 		backendIdlFactory,
-		process.env.BACKEND_CANISTER_ID,
+		process.env.CANISTER_ID_BACKEND,
 		pemPath
 	);
 
