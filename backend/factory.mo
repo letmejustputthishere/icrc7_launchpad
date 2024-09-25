@@ -1,5 +1,4 @@
-import Ic "ic:aaaaa-aa";
-import Icp "canister:icp_ledger";
+import Management "ic:aaaaa-aa";
 import Cmc "canister:cmc";
 import Cycles "mo:base/ExperimentalCycles";
 import IcpLedger "canister:icp_ledger";
@@ -9,38 +8,40 @@ import Result "mo:base/Result";
 import Nat64 "mo:base/Nat64";
 import Blob "mo:base/Blob";
 import Error "mo:base/Error";
-import Types "types";
 
 module Factory {
 
-	public func installCode(args : Types.install_code_args) : async () {
-		let canisterId = await Ic.install_code(args);
+	public func installCode(args : Management.install_code_args) : async () {
+		let _canisterId = await Management.install_code(args);
 	};
 
 	public func updateControllers(controllers : [Principal], canisterId : Principal) : async () {
-		await Ic.update_settings({
+		await Management.update_settings({
 			canister_id = canisterId;
 			settings = {
 				controllers = ?controllers;
 				compute_allocation = null;
 				freezing_threshold = null;
 				memory_allocation = null;
+				reserved_cycles_limit = null;
+				log_visibility = null;
+				wasm_memory_limit = null;
 			};
 			sender_canister_version = null;
 		});
 	};
 
 	public func createCanisterWithIcp(args : Cmc.NotifyCreateCanisterArg) : async Cmc.NotifyCreateCanisterResult {
-		let canisterId = await Cmc.notify_create_canister(args);
+		let _canisterId = await Cmc.notify_create_canister(args);
 	};
 
-	public func createCanisterWithCycles(args : Types.create_canister_args, cycles : Nat) : async Types.create_canister_result {
-		Cycles.add(cycles);
-		let result = await Ic.create_canister(args);
+	public func createCanisterWithCycles(args : Management.create_canister_args, cycles : Nat) : async Management.create_canister_result {
+		Cycles.add<system>(cycles);
+		let _result = await Management.create_canister(args);
 	};
 
 	public func topUpCanister(args : Cmc.NotifyTopUpArg) : async Cmc.NotifyTopUpResult {
-		let result = await Cmc.notify_top_up(args);
+		let _result = await Cmc.notify_top_up(args);
 	};
 
 	public func deployCanister(wasm_module : Blob, init_args : Blob, cycles : Nat) : async Principal {
@@ -69,7 +70,7 @@ module Factory {
 			let transferResult = await IcpLedger.transfer({
 				amount = { e8s = Nat64.fromNat(balance) - 10_000 : Nat64 };
 				// we move the funds from the caller dedicated subacccount
-				from_subaccount = ?Blob.toArray(principalToSubaccount(caller));
+				from_subaccount = ?principalToSubaccount(caller);
 				created_at_time = null;
 				fee = { e8s = 10_000 : Nat64 };
 				// the memo is important for the CMC to confirm the operation
@@ -78,7 +79,7 @@ module Factory {
 				memo = 0x50555054;
 				// we move the funds to the canister dedicated subaccount for the CMC
 				// the CMC only checks the caller dedicated subaccount when topping up
-				to = Blob.toArray(accountIdentifier(Principal.fromActor(Cmc), principalToSubaccount(canister)));
+				to = accountIdentifier(Principal.fromActor(Cmc), principalToSubaccount(canister));
 			});
 
 			let blockIndex = switch (transferResult) {
