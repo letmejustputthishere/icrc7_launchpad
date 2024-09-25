@@ -45,7 +45,7 @@ actor Main {
 	public shared ({ caller }) func getUserAccount() : async IcpLedger.Account {
 		{
 			owner = Principal.fromActor(Main);
-			subaccount = ?Blob.toArray(principalToSubaccount(caller));
+			subaccount = ?principalToSubaccount(caller);
 		};
 	};
 
@@ -60,7 +60,7 @@ actor Main {
 		// check ICP balance of the callers dedicated account
 		let balance = await IcpLedger.icrc1_balance_of({
 			owner = Principal.fromActor(Main);
-			subaccount = ?Blob.toArray(principalToSubaccount(caller));
+			subaccount = ?principalToSubaccount(caller);
 		});
 
 		if (balance < 200_000_000) {

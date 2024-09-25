@@ -1,36 +1,23 @@
-# Vite + SvelteKit + Motoko
+# ICRC-7 Launchpad
 
-### Get started directly:
-
-> [!WARNING]
-> Due to current limitations, this template does not work in a Browser Editor when using gitpod or codespaces. Please use VS Code for desktop instead.
-> <img width="633" alt="Screenshot 2024-01-29 at 12 44 57" src="https://github.com/letmejustputthishere/vite-sveltekit-motoko/assets/32162112/2f2c025d-354b-47ca-9303-56bce180f6e7">
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/letmejustputthishere/vite-sveltekit-motoko)
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/letmejustputthishere/vite-sveltekit-motoko?quickstart=1)
-
-This template gives you everything you need to build a full-stack Web3 application on the [Internet Computer](https://internetcomputer.org/).
-
-For an example of a real-world dapp built using this starter project, check out the [source code](https://github.com/dfinity/feedback) for DFINITY's [Developer Experience Feedback Board](https://dx.internetcomputer.org/).
-
-## 📦 Create a New Project
+## Quickstart
 
 > [!IMPORTANT]
-> Make sure that [Node.js](https://nodejs.org/en/) `>= 18`, [mops](https://docs.mops.one/quick-start) `>=0.39.2` and [`dfx`](https://internetcomputer.org/docs/current/references/dfxvm/) `>= 0.16.1` are installed on your system.
+> Make sure that [Node.js](https://nodejs.org/en/) `>= 20`, [mops](https://docs.mops.one/quick-start) `>=1.0.0` and [`dfx`](https://internetcomputer.org/docs/current/references/dfxvm/) `>= 0.23.0` are installed on your system.
 
-Run the following commands in a new, empty project directory:
+> [!WARNING]
+> Make sure to have a `identity.pem` at the root of the project. Provide the account identifier of this identity in the `init_args` of the `dfx.json` file for the ledger and cmc canister deployments.
 
-```sh
-npx degit letmejustputthishere/vite-sveltekit-motoko vite-sveltekit-motoko # Download this starter project
-cd vite-sveltekit-motoko # Navigate to the project directory
+```bash
 dfx start --clean --background # Run dfx in the background
 npm run setup # Install packages, deploy canisters, and generate type bindings
 
 npm start # Start the development server
-```
 
-When ready, run `dfx deploy --network ic` to deploy your application to the Internet Computer.
+# in a new terminal run
+npm run upload-canisters # upload the wasm files for the icrc7 ledger and asset canister to the launchpad canister
+npm run create-collections # create a number of dummy collections on the launchpad
+```
 
 ## 🛠️ Technology Stack
 
